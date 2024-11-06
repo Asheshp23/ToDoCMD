@@ -1,24 +1,28 @@
 // swift-tools-version: 6.0
-// The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
 let package = Package(
-    name: "ToDoCMD",
-    products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
-        .library(
-            name: "ToDoCMD",
-            targets: ["ToDoCMD"]),
-    ],
-    targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
-        .target(
-            name: "ToDoCMD"),
-        .testTarget(
-            name: "ToDoCMDTests",
-            dependencies: ["ToDoCMD"]
-        ),
-    ]
+  name: "ToDoCMD",  // Your package name
+  platforms: [
+    .macOS(.v12),
+  ],
+  products: [
+    .executable(
+      name: "ToDoCMD",  // Executable product
+      targets: ["ToDoCMD"]  // Target for your executable
+    ),
+  ],
+  dependencies: [],
+  targets: [
+    .executableTarget(  // Use executableTarget instead of target
+      name: "ToDoCMD",  // Name of the executable target
+      path: "Sources/ToDoCMD"  // Path to your source code
+                     ),
+    .testTarget(
+      name: "ToDoCMDTests",  // Your test target name
+      dependencies: ["ToDoCMD"],
+      path: "Tests/ToDoCMDTests"  // Path to your test files
+    ),
+  ]
 )
