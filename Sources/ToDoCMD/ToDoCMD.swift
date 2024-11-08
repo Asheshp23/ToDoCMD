@@ -2,51 +2,69 @@ import Foundation
 import SwiftUI
 
 // Define the Task struct
-public struct ToDoItem: Identifiable {
+public struct ToDoItem: Identifiable, Codable {
   public let id: Int
   let title: String
   var isCompleted: Bool
 }
 
-// Define the TaskManager to manage tasks
-@available(iOS 13.0.0, *)
-public actor TaskManager {
-  private var tasks: [ToDoItem] = []
-  private var nextId: Int = 1
+public class TaskManager {
+  private(set) var tasks: [ToDoItem] = []
+  private let fileURL: URL
+  
+  init() {
+    // Define the file path for storing tasks
+    let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+    fileURL = documentsURL.appendingPathComponent("tasks.json")
+    
+    loadTasks()
+  }
   
   func addTask(title: String) {
-    let task = ToDoItem(id: nextId, title: title, isCompleted: false)
-    tasks.append(task)
-    nextId += 1
-    print("Added task: \(title)")
+    let newTask = ToDoItem(id: tasks.count + 1, title: title, isCompleted: false)
+    tasks.append(newTask)
+    saveTasks()
   }
   
   func listTasks() {
-    if tasks.isEmpty {
-      print("No tasks available.")
-    } else {
-      print("Tasks:")
-      for task in tasks {
-        print("\(task.id): \(task.title) - \(task.isCompleted ? "Completed" : "Pending")")
-      }
+    for task in tasks {
+      print("\(task.id): \(task.title) [\(task.isCompleted ? "Completed" : "Pending")]")
     }
   }
   
   func markTaskAsCompleted(id: Int) {
     if let index = tasks.firstIndex(where: { $0.id == id }) {
       tasks[index].isCompleted = true
-      print("Task \(id) marked as completed.")
+      saveTasks()
     } else {
-      print("Task with ID \(id) not found.")
+      print("Task not found.")
     }
   }
   
   func removeTask(id: Int) {
     if let index = tasks.firstIndex(where: { $0.id == id }) {
-      let removedTask = tasks.remove(at: index)
-      print("Removed task: \(removedTask.title)")
+      tasks.remove(at: index)
+      saveTasks()
     } else {
-      print("Task with ID \(id) not found.")
+      print("Task not found.")
+    }
+  }
+  
+  private func saveTasks() {
+    do {
+      let data = try JSONEncoder().encode(tasks)
+      try data.write(to: fileURL)
+    } catch {
+      print("Failed to save tasks: \(error)")
+    }
+  }
+  
+  private func loadTasks() {
+    do {
+      let data = try Data(contentsOf: fileURL)
+      tasks = try JSONDecoder().decode([ToDoItem].self, from: data)
+    } catch {
+      print("No previous tasks found or failed to load tasks.")
     }
   }
 }
